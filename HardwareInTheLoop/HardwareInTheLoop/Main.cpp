@@ -1,15 +1,23 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <random>
 
 using namespace std::chrono;
 
 // Define the simulated environment
 class SimulatedEnvironment {
 public:
+    SimulatedEnvironment() {
+        // Initialize random number generator
+        std::random_device rd;
+        generator = std::mt19937(rd());
+        distribution = std::uniform_real_distribution<>(32.0, 52.0);
+    }
+
     void update() {
-        // Update the environment state
-        temperature += 0.1; // Simple example of changing temperature
+        // Generate a random temperature between 32 and 52
+        temperature = distribution(generator);
     }
 
     double getTemperature() const {
@@ -17,7 +25,9 @@ public:
     }
 
 private:
-    double temperature = 20.0;
+    double temperature = 42.0;
+    std::mt19937 generator;
+    std::uniform_real_distribution<> distribution;
 };
 
 // Define the interface for the hardware
@@ -32,6 +42,10 @@ public:
     double receiveData() {
         // Simulate receiving data from hardware
         return 42.0;
+    }
+
+    void sendCorrection(double correction) {
+        std::cout << "Sending correction signal to hardware: " << correction << std::endl;
     }
 };
 
@@ -57,6 +71,10 @@ int main() {
 
             double hardwareData = hardware.receiveData();
             std::cout << "Received data from hardware: " << hardwareData << std::endl;
+
+            // Calculate correction signal
+            double correction = 42.0 - environment.getTemperature();
+            hardware.sendCorrection(correction);
 
             // Update the last update time
             lastUpdateTime = currentTime;
